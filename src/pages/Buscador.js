@@ -1,6 +1,7 @@
 import React from 'react'
 import axios from 'axios';
 import { useState, useEffect } from 'react'
+import { Link } from "react-router-dom";
 
 function Buscador() {
 
@@ -14,7 +15,7 @@ function Buscador() {
     }
 
     useEffect(() => {
-        if (buscar != '') {
+        if (buscar !== '') {
             const axiosPost = async () => {
                 const response = await axios(`http://localhost:3002/api/search/${buscar}`);
                 setPost(response.data)
@@ -32,13 +33,16 @@ function Buscador() {
     }, [])
 
     const presupuestos = post.map((presupuesto) =>
-        <div className="row fila">
-            <div className="col-sm-1">{presupuesto.ID}</div>
-            <div className="col-sm-3">{presupuesto.Cliente}</div>
-            <div className="col-sm-4">{presupuesto.Direccion}</div>
-            <div className="col-sm-4">{presupuesto.Datos_Presupuesto}</div>
-        </div>
+        <Link to={"/Presupuesto"+ presupuesto.ID} className="enlaceList">
+            <div className="row fila">
+                <div className="col-sm-1">{presupuesto.ID}</div>
+                <div className="col-sm-3">{presupuesto.Cliente}</div>
+                <div className="col-sm-4">{presupuesto.Direccion}</div>
+                <div className="col-sm-4">{presupuesto.Datos_Presupuesto}</div>
+            </div>
+        </Link>
     )
+
     return (
         <div className="container  mt-3">
             <h1 className="mb-4">Buscar Presupuesto</h1>
