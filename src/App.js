@@ -40,7 +40,6 @@ function App() {
             </Nav>
           </Container>
         </Navbar>
-
         <Switch>
           <Route path="/Buscador">
             <Buscador />
@@ -54,6 +53,7 @@ function App() {
         </Switch>
 
       </Router>
+      <footer className="mx-4 mb-4"><small>© Copyright by Pablo Fuentes 2021 - COFAM Presupuestos v2.0</small></footer>
     </div>
   );
 }

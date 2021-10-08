@@ -45,14 +45,14 @@ function Buscador() {
 
     return (
         <div className="container  mt-3">
-            <h1 className="mb-4">Buscar Presupuesto</h1>
+            <h1 className="mb-4 title">Buscar Presupuesto</h1>
             <input className="form-control mb-3" type="text" placeholder="Buscar por cliente o dirección..." onChange={search} name="buscar" />
             <div className="lista container">
                 <div className="row  tituloFila">
-                    <div className="col-sm-1">ID</div>
-                    <div className="col-sm-3">Cliente</div>
-                    <div className="col-sm-4">Dirección</div>
-                    <div className="col-sm-4">Datos</div>
+                    <div className="col-sm-1 th">ID</div>
+                    <div className="col-sm-3 th">Cliente</div>
+                    <div className="col-sm-4 th">Dirección</div>
+                    <div className="col-sm-4 th">Datos</div>
                 </div>
                 {presupuestos}
             </div>

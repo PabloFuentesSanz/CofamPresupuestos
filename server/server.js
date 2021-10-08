@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('./config/db')
 const cors = require('cors')
 const bodyParser = require('body-parser')
-
+const htmlPdf = require('html-pdf')
 const app = express();
 const PORT = 3002;
 app.use(cors());
@@ -24,7 +24,7 @@ app.get("/api/get", (req, res) => {
 app.get("/api/getFromId/:id", (req, res) => {
 
     const id = req.params.id;
-    db.query("SELECT * FROM presupuestos WHERE id = "+id+"",
+    db.query("SELECT * FROM presupuestos WHERE id = " + id + "",
         (err, result) => {
             if (err) {
                 console.log(err)
@@ -45,7 +45,7 @@ app.get("/api/getTrabajos", (req, res) => {
 app.get("/api/search/:data", (req, res) => {
 
     let data = req.params.data.replace("'", "");
-    db.query("SELECT * FROM presupuestos WHERE Cliente like '%"+data+"%' OR direccion like '%"+data+"%' ORDER BY id DESC",
+    db.query("SELECT * FROM presupuestos WHERE Cliente like '%" + data + "%' OR direccion like '%" + data + "%' ORDER BY id DESC",
         (err, result) => {
             if (err) {
                 console.log(err)
@@ -53,6 +53,224 @@ app.get("/api/search/:data", (req, res) => {
             res.send(result)
         });
 });
+
+app.post("/api/deleteFromId/:id", (req, res) => {
+
+    const id = req.params.id;
+
+    db.query("DELETE FROM presupuestos WHERE id = " + id + "",
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            res.send(result);
+        });
+});
+
+const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title) => {
+    try{
+        const htmlToPdfOptions = {
+            "type" : "PDF",
+            "format" : "A4",
+            "renderDelay" : 100,
+            "header": {
+                "height": "30mm",
+                "contents": '<div style="text-align: center;">Cofam Presupuestos</div>'
+              },
+              "border": {
+                "right": "1cm",
+                "left": "1cm"
+              },
+        }
+
+        const htmlContent = `
+        <html>
+            <head>
+            <style>
+
+                body{
+                    font-family: Calibri;
+                }
+                .datos{
+                    float:left;
+                    color:#243841;
+                    padding-top:5px;
+                    padding-left:3px;
+                    border: 2px solid #92D050;
+                    width:60%;
+                }
+
+                .info{
+                    z-index:1000;
+                    float:right;
+                    background-color: #92D050;
+                    color:white;
+                    font-size:17px;
+                    text-align:right;
+                    padding-right:20px;
+                    padding-top:-10px;
+                    padding-bottom:10px;
+                    width:23%;
+                    height:80px;
+                }
+
+                .miparrafo {
+                    margin: 7px;
+                }
+
+                .presu{
+                    display: inline-block;
+                    text-align:left;
+                    color:#243841;
+                    margin-top:20px;
+                    margin-bottom: 20px;
+                }
+
+                .trabajos{
+                    display:block;
+                    width:99%;
+                    min-height: 75%;
+                    font-size:13px;
+                    line-height: 1.8;
+		            text-align: justify;
+                    padding-right: 20px;
+                }
+                .importe{
+                    border: 2px solid #243841;
+                }
+
+                .azul{
+                    text-align:center;
+                    width:99.5%;
+                    height:20px;
+                    background-color:  #243841;
+                    color:white;
+                    font-weight:bold;
+                }
+
+   
+                table{
+                    padding:0px;
+                    width:99%;
+                    border: 1px solid #243841;
+                    text-align:center;
+                }
+
+                tr{
+                    border: 1px solid #243841;
+
+                }
+
+            </style>
+            </head>
+            <body>
+                <div class='datos'>
+                    <p class='miparrafo'><span style='font-weight:bold'>Cliente: </span>${cliente}</p>
+                    <p class='miparrafo'><span style='font-weight:bold'>Dirección: </span>${direccion}, ${cp}</p>
+                    <p class='miparrafo'><span style='font-weight:bold'>Tel.: </span>${telefono}</p>
+                    <p class='miparrafo'><span style='font-weight:bold; '>e-mail: </span>${mail}</p>
+                </div>
+                    
+                <div class='info'>
+                    <p >Presupuesto Nº: <span style='font-weight:bold'>ID</span> </p>
+                    <p >Fecha: <span style='font-weight:bold'>${fecha}</span></p>
+                </div>  
+                <br>
+                <div class='presu'>
+                    <p class='miparrafo'>De acuerdo a sus necesidades, les detallamos a continuación el siguiente presupuesto:</p>
+                    <p class='miparrafo' style='font-weight:bold; font-size:18px;' >${necesidades}</p>
+                </div>
+                <div class='azul'>TRABAJOS A REALIZAR</div>
+                <div class='trabajos'>
+                    ${trabajos}
+                </div>
+                 <table style='padding:20px;' >
+                    ${garantia ? "<tr><td style='text-align:justify; font-size:13px;'><span style='font-weight:bold; text-align:justify;'>NOTA:</span> Nosotros damos una garantía de "+garantia+", pero no la damos para que el cliente lo vea nada más, sino porque estamos seguros de la eficacia de nuestro trabajo.<br><br><hr><br><br></td></tr></tr>" : ""}               
+                     ${nota}
+                    <tr >
+                        <td>TIEMPO DE EJECUCIÓN: ${tiempo}<br><br><br><br></td>
+                    </tr>
+                    <tr style='text-align:left'>
+                        <td style='text-align:left; font-size:13px; '>
+                            <span style='font-weight:bold'>EN EL PRESENTE PRESUPUESTO NO ESTA INCLUIDO:</span><br>
+                            <ul>
+                                <li>LICENCIAS Y PERMISOS DE TRABAJO</li>
+                                <li>EL GASTO DE LA LUZ Y EL AGUA</li>
+                                <li>IVA CORESPONDIENTE </li>
+                            </ul>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr style='text-align:left'>
+                        <td style='text-align:left; font-size:13px; '>
+                            <span style='font-weight:bold'>Nuestra empresa dispone de:</span><br>
+                            <ul>
+                                <li>Seguro de Responsabilidad Civil con Allianz con una cobertura de hasta 900.000€ </li>
+                                <li>Registro de empresas acreditadas.</li>
+                                <li>Cursos PRL con diplomas acreditados de 8 y 20 horas.</li>
+                                <li>Reconocimientos médicos</li>
+                                <li>Alta en Seguridad Social</li>
+                            </ul>
+                            <br><br>
+                        </td>
+                    </tr>      
+                </table>
+                
+                 <table cellspacing=0>
+                    <tr style='text-align:center;'>
+                        <td style='width:50%; font-weight:bold;'></td>
+                        <td style='width:16.5%;font-size:16px;border:1px solid  #243841; border-left: 1px solid white; '>IMPORTE</td>
+                        <td style='width:16.5%; font-size:16px;border:1px solid  #243841;'>IVA</td>
+                        <td style='width:16.5%; font-size:16px;border:1px solid  #243841;'>TOTAL</td>
+                  </tr>
+                  <tr style='text-align:center;'>
+                        <td style='width:50%; '></td>
+                        <td style='padding:10px; margin:10px;width:16.5%;font-size:16px;font-weight:bold;border:1px solid  #243841;border-left: 1px solid white;border-right: 1px solid white;'>${importe}</td>
+                        <td style='width:16.5%;font-size:16px;font-weight:bold;border:1px solid  #243841;border-left: 1px solid white;border-right: 1px solid white;'>${tipo}</td>
+                        <td style='width:16.5%;font-size:16px;font-weight:bold;border:1px solid  #243841;border-left: 1px solid white;'>${total}</td>
+                  </tr>
+                </table>
+                <table cellspacing=0  style='font-size:12px; border-color:white; margin-top:25px; padding:5px;'>
+                    <tr style='text-align:left'>
+                        <td style='text-align:left;border:1px solid #243841;padding:5px;'>
+                            <span style='font-weight:bold'>Validez del Presupuesto:</span><br>
+                        </td>
+                        <td style='text-align:left;border:1px solid #243841;padding:5px;'>30 días</td>
+                    </tr>
+                    <tr style='text-align:left'>
+                        <td style='text-align:left; border:1px solid #243841;padding:5px;'>
+                            <span style='font-weight:bold'>Garantía:</span><br>
+                        </td>
+                        ${garantia ? "<td style='text-align:left;border:1px solid #243841;padding:5px;'>"+garantia+"</td>" : ""}
+                        <td style='text-align:center'>Cualquier duda, llámenos: 637 902 421</td>
+                    </tr>
+                    <tr style='text-align:left'>
+                            <td style='text-align:left; width:20%;border:1px solid #243841;padding:5px;'>
+                                <span style='font-weight:bold'>Forma de Pago:</span><br>
+                            </td>
+                            <td style='text-align:left; width:30%;border:1px solid #243841;padding:5px;' >
+                                <span>${alfirmar} al firmar el presupuesto</span><br>
+                                <span>${alempezar} a la hora de empezar</span><br>
+                                <span>${alfinalizar} al finalizar los trabajos</span><br>
+                            </td>
+                            <td style='text-align:center; width:50%;'>
+                                <span style='font-weight:bold'>Cualquier trabajo no adjuntado a este escrito, será presupuestado por separado.</span>   
+                            </td>
+                            <td></td>
+                    </tr>
+                </table>
+        
+        `
+
+
+        htmlPdf.create(htmlContent,htmlToPdfOptions).toFile("C:/Users/Pablo/Documents/PDF_COFAM/"+title, function(err, result){
+            if(err) return console.log(err);
+            console.log(result);
+        })
+    }catch(error){
+        console.log(error);
+    }
+}
 
 app.post("/api/savePresupuesto", (req, res) => {
     const fecha = req.body.fecha;
@@ -62,26 +280,35 @@ app.post("/api/savePresupuesto", (req, res) => {
     const telefono = req.body.telefono;
     const mail = req.body.mail;
     const necesidades = req.body.necesidades;
-    const trabajos =  req.body.trabajos;
+    const trabajos = req.body.trabajos;
     const tiempo = req.body.tiempoInicio;
     const importe = req.body.importe;
     const tipo = req.body.tipo;
-    const total = 0.0;
+    const total = req.body.totalImp;
     const estado = '';
-    const garantia = '';
+    const garantia = req.body.garantia;
     const alfirmar = req.body.alfirmar;
     const alempezar = req.body.alempezar;
     const alfinalizar = req.body.alfinalizar;
-    const nota = '';
+    const nota = req.body.nota;
+    const title = fecha+"_"+cliente+".pdf" // Añadir numero aleatorio o ID
+    GeneratePdf(fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
+/*
     db.query("INSERT INTO `presupuestos` (`ID`, `Fecha`, `Cliente`, `Direccion`, `Localidad`, `Telefono`, `email`, `Datos_Presupuesto`, `Trabajos_Realizar`, `Tiempo_Ejecucion`, `Importe`, `Tipo_IVA`, `Total`, `estado`, `Garantia`, `Firmar`, `Empezar`, `Finalizar`, `Nota2`) VALUES (NULL, '" + fecha + "', '" + cliente + "', '" + direccion + "', '" + cp + "', '" + telefono + "', '" + mail + "', '" + necesidades + "', '" + trabajos + "', '" + tiempo + "', " + importe + ", '" + tipo + "', " + total + ", '" + estado + "', '" + garantia + "', '" + alfirmar + "', '" + alempezar + "', '" + alfinalizar + "', '" + nota + "' )",
-    (err, result) => {
-        if (err) {
-            console.log(err)
-        }
-        res.redirect('http://localhost:3000/Buscador')
-    });
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            GeneratePdf(fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
+            res.redirect('http://localhost:3000/Buscador')
+        });*/
 
 });
+
+
+
+
+
 
 
 

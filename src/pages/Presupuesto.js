@@ -8,7 +8,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from "react-router-dom";
 
-
 function Presupuesto() {
 
 
@@ -69,7 +68,7 @@ function Presupuesto() {
             setPost(response.data[0])
 
         }
-        if(id){
+        if (id) {
             axiosPost();
         }
     }, [])
@@ -85,7 +84,7 @@ function Presupuesto() {
             }
             if (post.Trabajos_Realizar) {
                 document.getElementById("div_editor1").getElementsByTagName("rte-content")[0].firstChild.contentDocument.firstChild.lastChild.innerHTML = post.Trabajos_Realizar
-                
+
             }
             if (post.Nota2) {
                 document.getElementById("div_editor2").getElementsByTagName("rte-content")[0].firstChild.contentDocument.firstChild.lastChild.innerHTML = post.Nota2
@@ -100,19 +99,60 @@ function Presupuesto() {
         </option>
 
     )
-    
 
-    const submitForm = (event) =>{
+    const importeChange = () => {
+        let imp = document.getElementById("importe").value;
+        let tip = document.getElementById("tipo").value;
+        if (imp == '') {
+            document.getElementById("total").value = "Pendiente";
+
+        } else {
+
+            if (tip === "General (21%)") {
+                let por = (imp * (21 / 100));
+                document.getElementById("total").value = (parseFloat(imp) + parseFloat(por)).toFixed(2)
+
+            } else if (tip === "Reducido (10%)") {
+                let por = (imp * (10 / 100));
+
+                document.getElementById("total").value = (parseFloat(imp) + parseFloat(por)).toFixed(2);
+
+            } else {
+                document.getElementById("total").value = "Pendiente";
+
+            }
+        }
+    }
+
+    const submitForm = (event) => {
         event.preventDefault();
         document.getElementById("editor1").value = document.getElementById("div_editor1").getElementsByTagName("rte-content")[0].firstChild.contentDocument.firstChild.lastChild.innerHTML;
+        document.getElementById("editor2").value = document.getElementById("div_editor2").getElementsByTagName("rte-content")[0].firstChild.contentDocument.firstChild.lastChild.innerHTML;
         document.getElementById("form1").submit();
     }
 
+    const deletePost = async () => {
+        if(id){
+            const conf = window.confirm('¿Seguro que desea borrar el presupuesto ?')
+            if(conf){
+                await axios.post(`http://localhost:3002/api/deleteFromId/${id}`);
+                window.location.href = "http://localhost:3000/Buscador";
+            }
+
+        }
+    }
+
+    let eliminar = ''
+    let nuevo = "Nuevo"
+    if (id) {
+        eliminar = <Button variant="danger"  className="eliminar mb-5 mt-3" onClick={deletePost}>Eliminar</Button> 
+        nuevo = "Editar"
+    }
 
     return (
         <div className="container mt-3">
 
-            <h1 className="mb-4">Nuevo Presupuesto</h1>
+            <h1 className="mb-4 title">{nuevo} Presupuesto</h1>
             <Form id="form1" action="http://localhost:3002/api/savePresupuesto" method="POST">
                 <Form.Group as={Row} className="mb-3" controlId="">
                     <Form.Label column sm="2">
@@ -184,11 +224,11 @@ function Presupuesto() {
                     <option disabled value="DEFAULT">Seleccione los trabajos</option>
                     {trabajosMap}
                 </Form.Select>
-                <input type="hidden" id="editor1" name="trabajos"/>
-                <div id="div_editor1">
+                <input type="hidden" id="editor1" name="trabajos" />
+                <div id="div_editor1" >
 
-                </div> 
-
+                </div>
+                <br />
                 <Form.Group as={Row} className="mb-3" controlId="">
                     <Form.Label column sm="2">
                         Tiempo de Ejecución:
@@ -196,7 +236,9 @@ function Presupuesto() {
                     <Col sm="3">
                         <Form.Control type="text" name="tiempoInicio" onChange={handleInput} defaultValue={id ? post.Tiempo_Ejecucion : ''} />
                     </Col>
-                    días
+                    <Col sm="2">
+                        <small>(especificar días o meses)</small>
+                    </Col>
                 </Form.Group>
 
                 <Form.Group as={Row} className="mb-3" controlId="">
@@ -207,7 +249,7 @@ function Presupuesto() {
                         <Form.Control type="text" defaultValue={id ? post.Garantia : ''} name="garantia" onChange={handleInput} />
                     </Col>
                     <Col sm="2">
-                        <p>años</p>
+                        <small>(especificar años o meses)</small>
                     </Col>
                 </Form.Group>
 
@@ -243,10 +285,10 @@ function Presupuesto() {
                         Importe:
                     </Form.Label>
                     <Col sm="2">
-                        <Form.Control type="number" name="importe" onChange={handleInput} defaultValue={id ? post.Importe : ''} />
+                        <Form.Control type="number" id="importe" name="importe" onChange={importeChange} defaultValue={id ? post.Importe : ''} />
                     </Col>
                     <Col sm="2">
-                        <Form.Select aria-label="Default select example" name="tipo" onChange={handleInput}  >
+                        <Form.Select id="tipo" aria-label="Default select example" name="tipo" onChange={importeChange}  >
                             <option value="Pendiente">Pendiente</option>
                             <option value="General (21%)">General 21%</option>
                             <option value="Reducido (10%)">Reducido 10%</option>
@@ -260,18 +302,20 @@ function Presupuesto() {
                         Total:
                     </Form.Label>
                     <Col sm="2">
-                        <Form.Control type="text" disabled name="total" onChange={handleInput} defaultValue={id ? post.Total : ''} />
+                        <Form.Control  type="text" id="total"  name="totalImp" onChange={handleInput} defaultValue={id ? post.Total : 'Pendiente'}  />
                     </Col>
                 </Form.Group>
+                <input type="hidden" id="editor2" name="nota" />
                 <Form.Label>Nota adicional:</Form.Label>
                 <div id="div_editor2"></div>
-
-                <Button variant="primary" type="submit" className="mb-5 mx-4 mt-3">
-                    Generar y Guardar Nuevo Presupuesto
+                <br />
+                <Button variant="primary" onClick={submitForm} className="mb-5  mt-3">
+                    Guardar Nuevo y Generar PDF
                 </Button>
-                <Button variant="primary"  onClick={submitForm} className="mb-5 mt-3">
-                    Guardar
+                <Button variant="primary" type="submit" className="mb-5 mx-4  mt-3">
+                    Guardar y Generar PDF
                 </Button>
+                {eliminar}
             </Form>
         </div>
     )
