@@ -68,19 +68,13 @@ app.post("/api/deleteFromId/:id", (req, res) => {
 });
 
 const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title) => {
-    try{
+    try {
         const htmlToPdfOptions = {
-            "type" : "PDF",
-            "format" : "A4",
-            "renderDelay" : 100,
-            "header": {
-                "height": "30mm",
-                "contents": '<div style="text-align: center;">Cofam Presupuestos</div>'
-              },
-              "border": {
-                "right": "1cm",
-                "left": "1cm"
-              },
+            "type": "PDF",
+            "format": "A4",
+            "renderDelay": "100",
+            "margin": "0cm",
+            "border": "0",
         }
 
         const htmlContent = `
@@ -90,7 +84,15 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
 
                 body{
                     font-family: Calibri;
+                    padding: 0 !important;
+                    margin: 0 !important;
                 }
+
+                .header{
+                    margin-left:-100px !important;
+                    background-color:blue
+                }
+
                 .datos{
                     float:left;
                     color:#243841;
@@ -164,6 +166,7 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
             </style>
             </head>
             <body>
+                <div id="pageHeader" class="header">TEJADOS COFAM</div>
                 <div class='datos'>
                     <p class='miparrafo'><span style='font-weight:bold'>Cliente: </span>${cliente}</p>
                     <p class='miparrafo'><span style='font-weight:bold'>Dirección: </span>${direccion}, ${cp}</p>
@@ -184,8 +187,8 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                 <div class='trabajos'>
                     ${trabajos}
                 </div>
-                 <table style='padding:20px;' >
-                    ${garantia ? "<tr><td style='text-align:justify; font-size:13px;'><span style='font-weight:bold; text-align:justify;'>NOTA:</span> Nosotros damos una garantía de "+garantia+", pero no la damos para que el cliente lo vea nada más, sino porque estamos seguros de la eficacia de nuestro trabajo.<br><br><hr><br><br></td></tr></tr>" : ""}               
+                 <table style='padding:20px; page-break-before:always;' >
+                    ${garantia ? "<tr><td style='text-align:justify; font-size:13px;'><span style='font-weight:bold; text-align:justify;'>NOTA:</span> Nosotros damos una garantía de " + garantia + ", pero no la damos para que el cliente lo vea nada más, sino porque estamos seguros de la eficacia de nuestro trabajo.<br><br><hr><br><br></td></tr></tr>" : ""}               
                      ${nota}
                     <tr >
                         <td>TIEMPO DE EJECUCIÓN: ${tiempo}<br><br><br><br></td>
@@ -219,15 +222,15 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                  <table cellspacing=0>
                     <tr style='text-align:center;'>
                         <td style='width:50%; font-weight:bold;'></td>
-                        <td style='width:16.5%;font-size:16px;border:1px solid  #243841; border-left: 1px solid white; '>IMPORTE</td>
-                        <td style='width:16.5%; font-size:16px;border:1px solid  #243841;'>IVA</td>
-                        <td style='width:16.5%; font-size:16px;border:1px solid  #243841;'>TOTAL</td>
+                        <td style='width:16.5%;font-size:16px; '>IMPORTE (€)</td>
+                        <td style='width:16.5%; font-size:16px;'>IVA</td>
+                        <td style='width:16.5%; font-size:16px;'>TOTAL (€)</td>
                   </tr>
                   <tr style='text-align:center;'>
                         <td style='width:50%; '></td>
-                        <td style='padding:10px; margin:10px;width:16.5%;font-size:16px;font-weight:bold;border:1px solid  #243841;border-left: 1px solid white;border-right: 1px solid white;'>${importe}</td>
-                        <td style='width:16.5%;font-size:16px;font-weight:bold;border:1px solid  #243841;border-left: 1px solid white;border-right: 1px solid white;'>${tipo}</td>
-                        <td style='width:16.5%;font-size:16px;font-weight:bold;border:1px solid  #243841;border-left: 1px solid white;'>${total}</td>
+                        <td style='padding:10px; margin:10px;width:16.5%;font-size:16px;font-weight:bold'>${importe}</td>
+                        <td style='width:16.5%;font-size:16px;font-weight:bold;'>${tipo}</td>
+                        <td style='width:16.5%;font-size:16px;font-weight:bold;'>${total}</td>
                   </tr>
                 </table>
                 <table cellspacing=0  style='font-size:12px; border-color:white; margin-top:25px; padding:5px;'>
@@ -236,14 +239,9 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                             <span style='font-weight:bold'>Validez del Presupuesto:</span><br>
                         </td>
                         <td style='text-align:left;border:1px solid #243841;padding:5px;'>30 días</td>
+                        <td style='text-align:center'>Cualquier duda, llámenos: (ES) 637 902 421</td>
                     </tr>
-                    <tr style='text-align:left'>
-                        <td style='text-align:left; border:1px solid #243841;padding:5px;'>
-                            <span style='font-weight:bold'>Garantía:</span><br>
-                        </td>
-                        ${garantia ? "<td style='text-align:left;border:1px solid #243841;padding:5px;'>"+garantia+"</td>" : ""}
-                        <td style='text-align:center'>Cualquier duda, llámenos: 637 902 421</td>
-                    </tr>
+                    ${garantia ? "<tr style='text-align:left'><td style='text-align:left; border:1px solid #243841;padding:5px;'><span style='font-weight:bold'>Garantía:</span><br></td><td style='text-align:left;border:1px solid #243841;padding:5px;'>" + garantia + "</td></tr>" : ""}
                     <tr style='text-align:left'>
                             <td style='text-align:left; width:20%;border:1px solid #243841;padding:5px;'>
                                 <span style='font-weight:bold'>Forma de Pago:</span><br>
@@ -263,11 +261,11 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
         `
 
 
-        htmlPdf.create(htmlContent,htmlToPdfOptions).toFile("C:/Users/Pablo/Documents/PDF_COFAM/"+title, function(err, result){
-            if(err) return console.log(err);
+        htmlPdf.create(htmlContent, htmlToPdfOptions).toFile("C:/Users/Pablo/Documents/PDF_COFAM/" + title, function (err, result) {
+            if (err) return console.log(err);
             console.log(result);
         })
-    }catch(error){
+    } catch (error) {
         console.log(error);
     }
 }
@@ -291,17 +289,17 @@ app.post("/api/savePresupuesto", (req, res) => {
     const alempezar = req.body.alempezar;
     const alfinalizar = req.body.alfinalizar;
     const nota = req.body.nota;
-    const title = fecha+"_"+cliente+".pdf" // Añadir numero aleatorio o ID
+    const title = fecha + "_" + cliente + ".pdf" // Añadir numero aleatorio o ID
     GeneratePdf(fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
-/*
-    db.query("INSERT INTO `presupuestos` (`ID`, `Fecha`, `Cliente`, `Direccion`, `Localidad`, `Telefono`, `email`, `Datos_Presupuesto`, `Trabajos_Realizar`, `Tiempo_Ejecucion`, `Importe`, `Tipo_IVA`, `Total`, `estado`, `Garantia`, `Firmar`, `Empezar`, `Finalizar`, `Nota2`) VALUES (NULL, '" + fecha + "', '" + cliente + "', '" + direccion + "', '" + cp + "', '" + telefono + "', '" + mail + "', '" + necesidades + "', '" + trabajos + "', '" + tiempo + "', " + importe + ", '" + tipo + "', " + total + ", '" + estado + "', '" + garantia + "', '" + alfirmar + "', '" + alempezar + "', '" + alfinalizar + "', '" + nota + "' )",
-        (err, result) => {
-            if (err) {
-                console.log(err)
-            }
-            GeneratePdf(fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
-            res.redirect('http://localhost:3000/Buscador')
-        });*/
+    /*
+        db.query("INSERT INTO `presupuestos` (`ID`, `Fecha`, `Cliente`, `Direccion`, `Localidad`, `Telefono`, `email`, `Datos_Presupuesto`, `Trabajos_Realizar`, `Tiempo_Ejecucion`, `Importe`, `Tipo_IVA`, `Total`, `estado`, `Garantia`, `Firmar`, `Empezar`, `Finalizar`, `Nota2`) VALUES (NULL, '" + fecha + "', '" + cliente + "', '" + direccion + "', '" + cp + "', '" + telefono + "', '" + mail + "', '" + necesidades + "', '" + trabajos + "', '" + tiempo + "', " + importe + ", '" + tipo + "', " + total + ", '" + estado + "', '" + garantia + "', '" + alfirmar + "', '" + alempezar + "', '" + alfinalizar + "', '" + nota + "' )",
+            (err, result) => {
+                if (err) {
+                    console.log(err)
+                }
+                GeneratePdf(fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
+                res.redirect('http://localhost:3000/Buscador')
+            });*/
 
 });
 
