@@ -5,6 +5,8 @@ const bodyParser = require('body-parser')
 const htmlPdf = require('html-pdf')
 const app = express();
 const PORT = 3002;
+var path = require('path');
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -67,12 +69,15 @@ app.post("/api/deleteFromId/:id", (req, res) => {
         });
 });
 
-const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title) => {
+const GeneratePdf = (id, fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title) => {
+    let imgSrc = 'file://' + __dirname + '/Logo.png';
+    imgSrc = path.normalize(imgSrc);
+    console.log(imgSrc)
     try {
         const htmlToPdfOptions = {
             "type": "PDF",
             "format": "A4",
-            "renderDelay": "100",
+            "renderDelay": "10",
             "margin": "0cm",
             "border": "0",
         }
@@ -88,11 +93,7 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                     margin: 0 !important;
                 }
 
-                .header{
-                    margin-left:-100px !important;
-                    background-color:blue
-                }
-
+                
                 .datos{
                     float:left;
                     color:#243841;
@@ -100,6 +101,7 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                     padding-left:3px;
                     border: 2px solid #92D050;
                     width:60%;
+                    margin-left: 20px;
                 }
 
                 .info{
@@ -108,12 +110,13 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                     background-color: #92D050;
                     color:white;
                     font-size:17px;
-                    text-align:right;
-                    padding-right:20px;
+                    text-align:center;
                     padding-top:-10px;
                     padding-bottom:10px;
                     width:23%;
                     height:80px;
+                    margin-right: 20px;
+                    margin-top: 15px;
                 }
 
                 .miparrafo {
@@ -121,21 +124,22 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                 }
 
                 .presu{
+                    width:100%; 
                     display: inline-block;
-                    text-align:left;
                     color:#243841;
-                    margin-top:20px;
+                    margin-top: 20px;
                     margin-bottom: 20px;
+                    text-align:center;
                 }
 
                 .trabajos{
                     display:block;
-                    width:99%;
-                    min-height: 75%;
+                    width:90%;
                     font-size:13px;
                     line-height: 1.8;
 		            text-align: justify;
                     padding-right: 20px;
+                    margin: 0px 60px 0px 50px;
                 }
                 .importe{
                     border: 2px solid #243841;
@@ -143,7 +147,7 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
 
                 .azul{
                     text-align:center;
-                    width:99.5%;
+                    width:100%;
                     height:20px;
                     background-color:  #243841;
                     color:white;
@@ -153,7 +157,8 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
    
                 table{
                     padding:0px;
-                    width:99%;
+                    width:93%;
+                    margin: auto;
                     border: 1px solid #243841;
                     text-align:center;
                 }
@@ -163,10 +168,46 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
 
                 }
 
+
+                .textHeader{
+                    color: #243841;
+                    text-align:center;
+                    display: inline-block;
+                    width:50%;
+                }
+
+                .imgIzq{
+                    display: inline-block;
+                    width:24%;
+
+                }
+
+                .imgDer{
+                    display: inline-block;
+                    width:24%;
+                }
+
             </style>
             </head>
             <body>
-                <div id="pageHeader" class="header">TEJADOS COFAM</div>
+                <div id="pageHeader" >
+                        <span class="imgIzq">
+                            <img src="https://pbs.twimg.com/profile_images/3573701444/7ca0713f9433117a555c6f5675ee13c3_400x400.jpeg" width="100" height="100" style="margin-left:70px;">
+                        </span>
+
+                        <span class="textHeader">
+                            <h2 style="margin:0; padding:0;">TEJADOS COFAM Madrid</h2>
+                            <p style="margin:0; padding:0;">Técnicos en Tejados y Cubiertas</p>
+                            <p style="margin:0; margin-top:10px; padding:0;">637 902 421 / 677 858 937</p>
+                            <p style="margin:0; padding:0;">info@tejados-cofam.es | www.tejados-cofam.es</p>
+
+                        </span>
+                        <span class="imgDer">
+                            Nº de Presupuesto: ${id}
+                        </span>
+
+                </div>
+                
                 <div class='datos'>
                     <p class='miparrafo'><span style='font-weight:bold'>Cliente: </span>${cliente}</p>
                     <p class='miparrafo'><span style='font-weight:bold'>Dirección: </span>${direccion}, ${cp}</p>
@@ -175,7 +216,7 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                 </div>
                     
                 <div class='info'>
-                    <p >Presupuesto Nº: <span style='font-weight:bold'>ID</span> </p>
+                    <p >Presupuesto: <span style='font-weight:bold'>${id}</span> </p>
                     <p >Fecha: <span style='font-weight:bold'>${fecha}</span></p>
                 </div>  
                 <br>
@@ -186,10 +227,12 @@ const GeneratePdf = (fecha, cliente, direccion, cp, telefono, mail, necesidades,
                 <div class='azul'>TRABAJOS A REALIZAR</div>
                 <div class='trabajos'>
                     ${trabajos}
+                </div> 
+                <div class='trabajos'>
+                    ${nota}
                 </div>
                  <table style='padding:20px; page-break-before:always;' >
                     ${garantia ? "<tr><td style='text-align:justify; font-size:13px;'><span style='font-weight:bold; text-align:justify;'>NOTA:</span> Nosotros damos una garantía de " + garantia + ", pero no la damos para que el cliente lo vea nada más, sino porque estamos seguros de la eficacia de nuestro trabajo.<br><br><hr><br><br></td></tr></tr>" : ""}               
-                     ${nota}
                     <tr >
                         <td>TIEMPO DE EJECUCIÓN: ${tiempo}<br><br><br><br></td>
                     </tr>
@@ -289,22 +332,60 @@ app.post("/api/savePresupuesto", (req, res) => {
     const alempezar = req.body.alempezar;
     const alfinalizar = req.body.alfinalizar;
     const nota = req.body.nota;
-    const title = fecha + "_" + cliente + ".pdf" // Añadir numero aleatorio o ID
-    GeneratePdf(fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
-    /*
-        db.query("INSERT INTO `presupuestos` (`ID`, `Fecha`, `Cliente`, `Direccion`, `Localidad`, `Telefono`, `email`, `Datos_Presupuesto`, `Trabajos_Realizar`, `Tiempo_Ejecucion`, `Importe`, `Tipo_IVA`, `Total`, `estado`, `Garantia`, `Firmar`, `Empezar`, `Finalizar`, `Nota2`) VALUES (NULL, '" + fecha + "', '" + cliente + "', '" + direccion + "', '" + cp + "', '" + telefono + "', '" + mail + "', '" + necesidades + "', '" + trabajos + "', '" + tiempo + "', " + importe + ", '" + tipo + "', " + total + ", '" + estado + "', '" + garantia + "', '" + alfirmar + "', '" + alempezar + "', '" + alfinalizar + "', '" + nota + "' )",
+
+    db.query("INSERT INTO `presupuestos` (`ID`, `Fecha`, `Cliente`, `Direccion`, `Localidad`, `Telefono`, `email`, `Datos_Presupuesto`, `Trabajos_Realizar`, `Tiempo_Ejecucion`, `Importe`, `Tipo_IVA`, `Total`, `estado`, `Garantia`, `Firmar`, `Empezar`, `Finalizar`, `Nota2`) VALUES (NULL, '" + fecha + "', '" + cliente + "', '" + direccion + "', '" + cp + "', '" + telefono + "', '" + mail + "', '" + necesidades + "', '" + trabajos + "', '" + tiempo + "', " + importe + ", '" + tipo + "', " + total + ", '" + estado + "', '" + garantia + "', '" + alfirmar + "', '" + alempezar + "', '" + alfinalizar + "', '" + nota + "' )",
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            db.query("SELECT MAX(ID) as id FROM presupuestos",
             (err, result) => {
                 if (err) {
                     console.log(err)
                 }
-                GeneratePdf(fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
+                let id = result[0].id
+                const title = id + "_" + fecha + "_" + cliente + ".pdf" // Añadir numero aleatorio o ID
+                GeneratePdf(id, fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
                 res.redirect('http://localhost:3000/Buscador')
-            });*/
-
+            });    
+        });
 });
 
 
 
+app.post("/api/updatePresupuesto", (req, res) => {
+    const id = req.body.id;
+    const fecha = req.body.fecha;
+    const cliente = req.body.cliente;
+    const direccion = req.body.direccion;
+    const cp = req.body.cp;
+    const telefono = req.body.telefono;
+    const mail = req.body.mail;
+    const necesidades = req.body.necesidades;
+    const trabajos = req.body.trabajos;
+    const tiempo = req.body.tiempoInicio;
+    const importe = req.body.importe;
+    const tipo = req.body.tipo;
+    const total = req.body.totalImp;
+    const estado = '';
+    const garantia = req.body.garantia;
+    const alfirmar = req.body.alfirmar;
+    const alempezar = req.body.alempezar;
+    const alfinalizar = req.body.alfinalizar;
+    const nota = req.body.nota;
+
+    db.query(`UPDATE  presupuestos SET Fecha = '${fecha}', Cliente = '${cliente}', Direccion = '${direccion}', Localidad = '${cp}', Telefono = '${telefono}', email = '${mail}', Datos_Presupuesto =  '${necesidades}', Trabajos_Realizar =  '${trabajos}', Tiempo_Ejecucion =  '${tiempo }' , Importe =  '${importe}', Tipo_IVA = '${tipo}', Total =  '${total}', estado =  '${estado}', Garantia =  '${garantia}', Firmar = '${alfirmar}', Empezar =  '${alempezar}', Finalizar =  '${alfinalizar}', Nota2 =  '${nota }' WHERE id = ${id} `,
+        (err, result) => {
+            if (err) {
+                console.log(err)
+            }
+            const title = id + "_" + fecha + "_" + cliente + ".pdf" // Añadir numero aleatorio o ID
+
+            GeneratePdf(id, fecha, cliente, direccion, cp, telefono, mail, necesidades, trabajos, tiempo, importe, tipo, total, estado, garantia, alfirmar, alempezar, alfinalizar, nota, title)
+            res.redirect('http://localhost:3000/Buscador')
+        });
+
+});
 
 
 

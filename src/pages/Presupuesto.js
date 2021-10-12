@@ -93,8 +93,15 @@ function Presupuesto() {
 
     }, [post])
 
+    const addTrabajo = (e) =>{
+      let select = document.getElementById('trabajosSelect')
+      let value = select.options[select.selectedIndex].value;
+      document.getElementById("div_editor1").getElementsByTagName("rte-content")[0].firstChild.contentDocument.firstChild.lastChild.innerHTML += value;
+
+    }
+
     const trabajosMap = trabajos.map((trabajo) =>
-        <option value={trabajo.Nombre}>
+        <option value={trabajo.Descripcion}>
             {trabajo.Nombre}
         </option>
 
@@ -131,10 +138,18 @@ function Presupuesto() {
         document.getElementById("form1").submit();
     }
 
+    const submitForm2 = (event) => {
+        event.preventDefault();
+        document.getElementById("editor1").value = document.getElementById("div_editor1").getElementsByTagName("rte-content")[0].firstChild.contentDocument.firstChild.lastChild.innerHTML;
+        document.getElementById("editor2").value = document.getElementById("div_editor2").getElementsByTagName("rte-content")[0].firstChild.contentDocument.firstChild.lastChild.innerHTML;
+        document.getElementById("form1").setAttribute('action', 'http://localhost:3002/api/updatePresupuesto')
+        document.getElementById("form1").submit();
+    }
+
     const deletePost = async () => {
-        if(id){
+        if (id) {
             const conf = window.confirm('¿Seguro que desea borrar el presupuesto ?')
-            if(conf){
+            if (conf) {
                 await axios.post(`http://localhost:3002/api/deleteFromId/${id}`);
                 window.location.href = "http://localhost:3000/Buscador";
             }
@@ -144,12 +159,17 @@ function Presupuesto() {
 
     let eliminar = ''
     let nuevo = "Nuevo"
+    let inputId = '';
+    let modificar = '';
     if (id) {
-        eliminar = <Button variant="danger"  className="eliminar mb-5 mt-3" onClick={deletePost}>Eliminar</Button> 
+        eliminar = <Button variant="danger" className="eliminar mb-5 mt-3" onClick={deletePost}>Eliminar</Button>
         nuevo = "Editar"
+        inputId = <input type="hidden" value ={id} name="id" />;
+        modificar = <Button variant="primary" onClick={submitForm2} className="mb-5 mx-4  mt-3">Guardar y Generar PDF</Button>
     }
 
     return (
+        
         <div className="container mt-3">
 
             <h1 className="mb-4 title">{nuevo} Presupuesto</h1>
@@ -158,6 +178,7 @@ function Presupuesto() {
                     <Form.Label column sm="2">
                         Cliente:
                     </Form.Label>
+                    {inputId}
                     <Col sm="10">
                         <Form.Control type="text" placeholder="Nombre del cliente" name="cliente" onChange={handleInput} defaultValue={id ? post.Cliente : ''} />
                     </Col>
@@ -220,12 +241,12 @@ function Presupuesto() {
                     </Col>
                 </FloatingLabel>
                 <Form.Label>Trabajos a realizar:</Form.Label>
-                <Form.Select defaultValue={'DEFAULT'}>
+                <Form.Select defaultValue={'DEFAULT'} onChange={addTrabajo} id="trabajosSelect">
                     <option disabled value="DEFAULT">Seleccione los trabajos</option>
                     {trabajosMap}
                 </Form.Select>
                 <input type="hidden" id="editor1" name="trabajos" />
-                <div id="div_editor1" >
+                <div id="div_editor1"  >
 
                 </div>
                 <br />
@@ -302,7 +323,7 @@ function Presupuesto() {
                         Total:
                     </Form.Label>
                     <Col sm="2">
-                        <Form.Control  type="text" id="total"  name="totalImp" onChange={handleInput} defaultValue={id ? post.Total : 'Pendiente'}  />
+                        <Form.Control type="text" id="total" name="totalImp" onChange={handleInput} defaultValue={id ? post.Total : 'Pendiente'} />
                     </Col>
                 </Form.Group>
                 <input type="hidden" id="editor2" name="nota" />
@@ -312,9 +333,7 @@ function Presupuesto() {
                 <Button variant="primary" onClick={submitForm} className="mb-5  mt-3">
                     Guardar Nuevo y Generar PDF
                 </Button>
-                <Button variant="primary" type="submit" className="mb-5 mx-4  mt-3">
-                    Guardar y Generar PDF
-                </Button>
+                {modificar}
                 {eliminar}
             </Form>
         </div>

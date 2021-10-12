@@ -1,28 +1,65 @@
 .header{
     position: sticky;
     /*background: linear-gradient(90deg, rgba(255,255,255,1) 2%, rgb(143, 180, 131) 53%, rgb(143, 180, 131) 100%);*/
-    background: linear-gradient(180deg, rgba(143,180,131,1) 0%, rgba(125,154,116,1) 89%, rgba(117,149,108,1) 100%);
+    /*background: linear-gradient(180deg, rgba(143,180,131,1) 0%, rgba(125,154,116,1) 89%, rgba(117,149,108,1) 100%);*/
+    background-color: #293C47;
     box-shadow: 0px 5px 15px 5px rgba(0,0,0,0.32);
     margin-bottom: 3em;
+    z-index: 2;
+}
+
+
+.containerAnimacion{
+    width: 100%;
+    text-align: center;
+    min-height: 80vh;
+
+}
+.imgAnimacion{
+    z-index: 1;
+    margin: auto;
+    animation: example 0.7s  linear;
+    position: relative;
+    top:200px;
+    cursor: pointer;
+}
+
+.aAnima{
+    animation: example 0.7s  linear;
+    position: relative;
+    top:200px;
+}
+
+@keyframes example {
+    from{
+        top:-350px;
+    }to{
+        top:200px;
+    }
+  }
+
+.footer{
+    position: relative;
+    bottom: 0;
 }
 
 .nav {
     text-decoration: none;
     margin-right: 2em;
-    font-size: 25px;
+    font-size: 20px;
     color: rgb(255, 255, 255) ;
     font-weight: bold;
 }
 
 .nav:hover{
-    color:rgba(195,219,84,1);
+    color:#C5DA5F;
 }
 .me-auto{
     margin-left: 50px;
 }
 .icon{
-   font-size: 20px;
-   margin-top: 10px;
+   font-size: 15px;
+   margin-top: 9px;
    margin-right: 10px;
 }
 .lista {
@@ -74,8 +111,14 @@
 
 .title{
     color:rgb(143, 180, 131);
-    text-shadow: 2px 2px 2px rgba(150, 150, 150, 0.45);}
+    text-shadow: 2px 2px 2px rgba(150, 150, 150, 0.45);
+    background:transparent;
+}
 label{
     color:rgb(143, 180, 131);
     text-shadow: 2px 2px 2px rgba(150, 150, 150, 0.26);
+}
+
+#div_editor1{
+    height: 900px;
 }

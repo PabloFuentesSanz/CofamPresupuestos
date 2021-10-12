@@ -26,6 +26,7 @@
     "immutable": "^4.0.0-rc.14",
     "jodit-react": "^1.1.1",
     "mysql": "^2.18.1",
+    "path": "^0.12.7",
     "pee": "0.0.11",
     "peer": "^0.6.1",
     "phantom-html-to-pdf": "^0.6.1",

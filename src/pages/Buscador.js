@@ -44,6 +44,7 @@ function Buscador() {
     )
 
     return (
+        
         <div className="container  mt-3">
             <h1 className="mb-4 title">Buscar Presupuesto</h1>
             <input className="form-control mb-3" type="text" placeholder="Buscar por cliente o dirección..." onChange={search} name="buscar" />
